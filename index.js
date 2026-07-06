@@ -1,37 +1,45 @@
 const express = require('express');
+const nodemailer = require('nodemailer');
 const app = express();
-app.use(express.json());
-
-const ONESIGNAL_APP_ID = "c55fedae-b7e4-43f1-9038-b1f6e456f1bc";
-const ONESIGNAL_API_KEY = "os_v2_app_yvp631vx4rb7debywh3oiwhrxrcuvnwui5qedbe2gwwsctgbxmoneglo5romajjyrzbuxqpetj3k3tqd6epx4shkybrsmyggzjklrwi";
-
-async function envoyerBip(montant, client, tel) {
-  await fetch("https://api.onesignal.com/notifications", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Basic ${ONESIGNAL_API_KEY}`
-    },
-    body: JSON.stringify({
-      app_id: ONESIGNAL_APP_ID,
-      include_email_tokens: ["avogodans61@gmail.com"],
-      email_subject: `💰 NOUVELLE COMMANDE ${montant} FCFA - ZenPay`,
-      email_body: `<html><body style="text-align:center; font-family:Arial"><h1 style="color:red; font-size:32px;">🔔 BIP BIP !</h1><h2>${montant} FCFA reçu</h2><p>Client: ${client}</p><p>Tel: ${tel}</p></body></html>`,
-      email_from_name: "ZenPay Alerte"
-    })
-  });
-}
-
-app.get('/', (req, res) => res.send('ZenPay BIP API OK'));
-app.get('/test-bip', async (req, res) => {
-  await envoyerBip("10000", "Fidelia Test", "22997000000");
-  res.send('BIP envoyé ! Verifie ton Gmail');
-});
-app.post('/api/bip', async (req, res) => {
-  const { montant, client, telephone } = req.body;
-  await envoyerBip(montant || "0", client || "Client", telephone || "");
-  res.json({ success: true });
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('BIP API en marche'));
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.zoho.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
+
+app.get('/test-bip', async (req,res)=>{
+  const to = req.query.email;
+  if(!to) return res.send('Ajoute ?email=...');
+  try {
+    await transporter.sendMail({
+      from: '"ZenPay" <noreply@zenpaybj.xyz>',
+      to: to,
+      subject: 'BIP BIP! Paiement ZenPay',
+      html: '<h1>🔔 10 000 FCFA recu - ZenPay</h1><p>Test OK depuis noreply@zenpaybj.xyz</p>'
+    });
+    res.send('BIP ENVOYE avec SUCCES a ' + to + ' depuis noreply@zenpaybj.xyz');
+  } catch(e){ res.status(500).send('ERREUR ZOHO: '+e.message); }
+});
+
+app.get('/bip', async (req,res)=>{
+  const clientEmail = req.query.email;
+  const montant = req.query.montant || '10000';
+  if(!clientEmail) return res.status(400).send('email client manquant');
+  try {
+    await transporter.sendMail({
+      from: '"ZenPay" <noreply@zenpaybj.xyz>',
+      to: clientEmail,
+      subject: `Paiement ${montant} FCFA confirme`,
+      html: `<h2>Merci ! ${montant} FCFA recu</h2>`
+    });
+    res.send('BIP client envoye a '+clientEmail);
+  } catch(e){ res.status(500).send(e.message) }
+});
+
+app.listen(PORT, ()=> console.log('OK'));
