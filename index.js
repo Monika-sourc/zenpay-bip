@@ -3,27 +3,26 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Route pour vérifier si le serveur est réveillé
 app.get('/', (req,res)=>{
   res.send('ZenPay BIP Server OK - ' + new Date().toISOString());
 });
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.zoho.com',
-  port: 587,
-  secure: false,
-  requireTLS: true,
+  host: 'smtppro.zoho.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000
 });
 
 app.get('/test-bip', async (req,res)=>{
   const to = req.query.email;
-  if(!to) return res.send('Ajoute ?email=...');
+  if(!to) return res.send('Ajoute ?email=tonemail@gmail.com');
   console.log('Tentative envoi vers', to);
   try {
     let info = await transporter.sendMail({
