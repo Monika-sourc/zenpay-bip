@@ -3,28 +3,41 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Route pour vérifier si le serveur est réveillé
+app.get('/', (req,res)=>{
+  res.send('ZenPay BIP Server OK - ' + new Date().toISOString());
+});
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.zoho.com',
-  port: 465,
-  secure: true,
+  host: 'smtp.zoho.com',
+  port: 587,
+  secure: false,
+  requireTLS: true,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
-  }
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000
 });
 
 app.get('/test-bip', async (req,res)=>{
   const to = req.query.email;
   if(!to) return res.send('Ajoute ?email=...');
+  console.log('Tentative envoi vers', to);
   try {
-    await transporter.sendMail({
+    let info = await transporter.sendMail({
       from: '"ZenPay" <noreply@zenpaybj.xyz>',
       to: to,
       subject: 'BIP BIP! Paiement ZenPay',
       html: '<h1>🔔 10 000 FCFA recu - ZenPay</h1><p>Test OK depuis noreply@zenpaybj.xyz</p>'
     });
-    res.send('BIP ENVOYE avec SUCCES a ' + to + ' depuis noreply@zenpaybj.xyz');
-  } catch(e){ res.status(500).send('ERREUR ZOHO: '+e.message); }
+    console.log('Envoye', info.messageId);
+    res.send('BIP ENVOYE avec SUCCES a ' + to);
+  } catch(e){ 
+    console.error('ERREUR SMTP', e);
+    res.status(500).send('ERREUR ZOHO: '+e.message); 
+  }
 });
 
 app.get('/bip', async (req,res)=>{
@@ -42,4 +55,4 @@ app.get('/bip', async (req,res)=>{
   } catch(e){ res.status(500).send(e.message) }
 });
 
-app.listen(PORT, ()=> console.log('OK'));
+app.listen(PORT, ()=> console.log('OK port '+PORT));
