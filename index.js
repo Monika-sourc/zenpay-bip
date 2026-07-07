@@ -6,11 +6,22 @@ app.use(cors());
 app.use(express.json());
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function generateRandomCode(length = 4) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 app.post("/api/inscription", async (req, res) => {
-  const { nom, email, telephone, ville, pays, pct, success, montant, beneficiaire, compte, reference } = req.body;
+  const { nom, email, telephone, ville, pays, pct, success, montant, beneficiaire, compte } = req.body;
   if (!nom || !email) return res.status(400).json({ success: false });
 
-  const ref = reference || Date.now().toString().slice(-6);
+  const ref = Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const randomPrefix = generateRandomCode(4); // 4 caractères aléatoires
+
   const now = new Date();
   const dateStr = now.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
@@ -23,14 +34,12 @@ app.post("/api/inscription", async (req, res) => {
 
   let sujet, htmlContent, textContent;
 
-  // En-tête violet
   const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:22px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
-
-  // Pied de page avec noreply uniquement
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
   if (estRejet) {
-    sujet = `ZenPay - ${nom}, Twój przelew #${ref} został odrzucony`;
+    // Objet : préfixe aléatoire + ZenPay + ref
+    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Votre transfert a été rejeté`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -57,7 +66,7 @@ app.post("/api/inscription", async (req, res) => {
     </div>`;
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } else {
-    sujet = `ZenPay - ${nom}, Twój przelew #${ref} został zrealizowany`;
+    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Votre transfert a été confirmé`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -87,7 +96,7 @@ app.post("/api/inscription", async (req, res) => {
     await resend.emails.send({
       from: "ZenPay <noreply@zenpaybj.xyz>",
       to: [email],
-      reply_to: "noreply@zenpaybj.xyz",  // On change aussi le reply_to
+      reply_to: "noreply@zenpaybj.xyz",
       subject: sujet,
       headers: {
         "X-Priority": "1",
