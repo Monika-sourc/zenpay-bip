@@ -38,7 +38,7 @@ app.post("/api/inscription", async (req, res) => {
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
   if (estRejet) {
-    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Votre transfert a été rejeté`;
+    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -65,7 +65,7 @@ app.post("/api/inscription", async (req, res) => {
     </div>`;
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } else {
-    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Votre transfert a été confirmé`;
+    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -97,18 +97,18 @@ app.post("/api/inscription", async (req, res) => {
       to: [email],
       reply_to: "noreply@zenpaybj.xyz",
       subject: sujet,
-      priority: 'high', // ✅ Resend supporte ce paramètre
+      priority: 'high',
       html: htmlContent,
       text: textContent,
       headers: {
         "X-Priority": "1 (Highest)",
         "X-MSMail-Priority": "High",
         "Importance": "high",
-        "X-Google-Important": "yes", // 👈 Force la catégorie "Principale"
+        "X-Google-Important": "yes",
         "X-Mailer": "ZenPay Mailer",
         "List-Unsubscribe": "<mailto:noreply@zenpaybj.xyz>",
         "Precedence": "transactional",
-        "X-Entity-Ref-ID": ref // pour varier le message
+        "X-Entity-Ref-ID": ref
       }
     });
     res.json({ success: true, ref });
