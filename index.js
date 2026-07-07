@@ -55,6 +55,8 @@ app.post("/api/inscription", async (req, res) => {
           <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
           <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
+        <!-- PETIT TEXTE EXPLICATIF POUR LE REJET -->
+        <p style="margin-top:10px;font-style:italic;color:#555;">W przypadku pytań prosimy o kontakt z naszym zespołem wsparcia technicznego.</p>
         <p>Prosimy sprawdzić dane i spróbować ponownie.</p>
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay pozostaje aktywne. Referencja <b>#${ref}</b></p>
@@ -63,7 +65,7 @@ app.post("/api/inscription", async (req, res) => {
         ${footer}
       </div>
     </div>`;
-    textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
+    textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. W przypadku pytań prosimy o kontakt z naszym zespołem wsparcia technicznego. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } else {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
     htmlContent = `
@@ -81,6 +83,8 @@ app.post("/api/inscription", async (req, res) => {
           <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
           <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
+        <!-- PETIT TEXTE EXPLICATIF POUR LE SUCCÈS -->
+        <p style="margin-top:10px;font-style:italic;color:#555;">Środki zostały pomyślnie przelane na wskazane konto. Możesz śledzić status swojego konta w aplikacji ZenPay.</p>
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay jest aktywne. Referencja <b>#${ref}</b></p>
         <p style="font-size:13px;color:#666">${ville || ''} ${pays || ''} - ${telephone || ''}</p>
@@ -88,7 +92,7 @@ app.post("/api/inscription", async (req, res) => {
         ${footer}
       </div>
     </div>`;
-    textContent = `Szanowny/a ${nom}, Sukces : Twój przelew został zrealizowany. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Zespół ZenPay.`;
+    textContent = `Szanowny/a ${nom}, Sukces : Twój przelew został zrealizowany. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Środki zostały pomyślnie przelane na wskazane konto. Zespół ZenPay.`;
   }
 
   try {
