@@ -20,7 +20,7 @@ app.post("/api/inscription", async (req, res) => {
   if (!nom || !email) return res.status(400).json({ success: false });
 
   const ref = Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  const randomPrefix = generateRandomCode(4); // 4 caractères aléatoires
+  const randomPrefix = generateRandomCode(4);
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -38,7 +38,6 @@ app.post("/api/inscription", async (req, res) => {
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
   if (estRejet) {
-    // Objet : préfixe aléatoire + ZenPay + ref
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Votre transfert a été rejeté`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
@@ -98,19 +97,23 @@ app.post("/api/inscription", async (req, res) => {
       to: [email],
       reply_to: "noreply@zenpaybj.xyz",
       subject: sujet,
+      priority: 'high', // ✅ Resend supporte ce paramètre
+      html: htmlContent,
+      text: textContent,
       headers: {
-        "X-Priority": "1",
+        "X-Priority": "1 (Highest)",
         "X-MSMail-Priority": "High",
         "Importance": "high",
+        "X-Google-Important": "yes", // 👈 Force la catégorie "Principale"
         "X-Mailer": "ZenPay Mailer",
         "List-Unsubscribe": "<mailto:noreply@zenpaybj.xyz>",
-        "Precedence": "transactional"
-      },
-      html: htmlContent,
-      text: textContent
+        "Precedence": "transactional",
+        "X-Entity-Ref-ID": ref // pour varier le message
+      }
     });
     res.json({ success: true, ref });
   } catch (e) {
+    console.error("Erreur Resend:", e);
     res.status(500).json({ success: false, error: e.message });
   }
 });
