@@ -21,7 +21,6 @@ app.post("/api/inscription", async (req, res) => {
 
   const ref = Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   const randomPrefix = generateRandomCode(4);
-  // Utiliser le préfixe aléatoire pour créer un alias unique
   const fromEmail = `noreply+${randomPrefix}@zenpaybj.xyz`;
 
   const now = new Date();
@@ -39,8 +38,18 @@ app.post("/api/inscription", async (req, res) => {
   const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:22px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
+  // Texte explicatif professionnel
+  let extraTextHtml = '';
+  let extraTextPlain = '';
+
   if (estRejet) {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
+    extraTextHtml = `
+      <p style="margin-top:15px;font-size:14px;color:#555;font-style:italic;">
+        Zalecamy sprawdzenie danych odbiorcy oraz numeru konta przed ponowną próbą. 
+        W razie pytań nasz zespół wsparcia jest do Państwa dyspozycji.
+      </p>`;
+    extraTextPlain = `Zalecamy sprawdzenie danych odbiorcy oraz numeru konta przed ponowną próbą. W razie pytań nasz zespół wsparcia jest do Państwa dyspozycji.`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -58,6 +67,7 @@ app.post("/api/inscription", async (req, res) => {
           <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
         <p>Prosimy sprawdzić dane i spróbować ponownie.</p>
+        ${extraTextHtml}
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay pozostaje aktywne. Referencja <b>#${ref}</b></p>
         <p style="font-size:13px;color:#666">${ville || ''} ${pays || ''} - ${telephone || ''}</p>
@@ -65,9 +75,14 @@ app.post("/api/inscription", async (req, res) => {
         ${footer}
       </div>
     </div>`;
-    textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
+    textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane i spróbować ponownie. ${extraTextPlain} Zespół ZenPay.`;
   } else {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
+    extraTextHtml = `
+      <p style="margin-top:15px;font-size:14px;color:#555;font-style:italic;">
+        Dziękujemy za zaufanie. Jesteśmy do Państwa dyspozycji w razie jakichkolwiek pytań dotyczących tej transakcji.
+      </p>`;
+    extraTextPlain = `Dziękujemy za zaufanie. Jesteśmy do Państwa dyspozycji w razie jakichkolwiek pytań dotyczących tej transakcji.`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -83,6 +98,7 @@ app.post("/api/inscription", async (req, res) => {
           <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
           <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
+        ${extraTextHtml}
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay jest aktywne. Referencja <b>#${ref}</b></p>
         <p style="font-size:13px;color:#666">${ville || ''} ${pays || ''} - ${telephone || ''}</p>
@@ -90,12 +106,12 @@ app.post("/api/inscription", async (req, res) => {
         ${footer}
       </div>
     </div>`;
-    textContent = `Szanowny/a ${nom}, Sukces : Twój przelew został zrealizowany. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Zespół ZenPay.`;
+    textContent = `Szanowny/a ${nom}, Sukces : Twój przelew został zrealizowany. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. ${extraTextPlain} Zespół ZenPay.`;
   }
 
   try {
     await resend.emails.send({
-      from: `ZenPay <${fromEmail}>`, // Expéditeur unique à chaque envoi
+      from: `ZenPay <${fromEmail}>`,
       to: [email],
       reply_to: "noreply@zenpaybj.xyz",
       subject: sujet,
