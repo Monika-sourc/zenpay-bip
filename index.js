@@ -49,13 +49,14 @@ app.post("/api/inscription", async (req, res) => {
         <p><b style="color:#d9534f;">Anulowanie przelewu przez administratora</b></p>
         <p>Przelew o kwocie <b>${montantAffiche}</b> został anulowany przez administratora serwisu ZenPay.</p>
         <p>Decyzja została podjęta ze względów administracyjnych.</p>
-        <div style="background:#f5f5f5;padding:10px;border-radius:4px;margin:10px 0;">
-          <p><strong>Referencja :</strong> #${ref}</p>
-          <p><strong>Data anulowania :</strong> ${dateStr}</p>
-          <p><strong>Godzina :</strong> ${timeStr}</p>
-          <p><strong>Kwota :</strong> ${montantAffiche}</p>
-          <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
-          <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
+        <!-- Zone d'informations avec fond et bordure renforcés -->
+        <div style="background:#f0f0f0;padding:12px 14px;border-radius:4px;margin:10px 0;border-left:4px solid #7B2FBE;">
+          <p style="margin:4px 0;"><strong>Referencja :</strong> #${ref}</p>
+          <p style="margin:4px 0;"><strong>Data anulowania :</strong> ${dateStr}</p>
+          <p style="margin:4px 0;"><strong>Godzina :</strong> ${timeStr}</p>
+          <p style="margin:4px 0;"><strong>Kwota :</strong> ${montantAffiche}</p>
+          <p style="margin:4px 0;"><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
+          <p style="margin:4px 0;"><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
         <p style="margin-top:15px;">W razie pytań prosimy o kontakt z naszym działem obsługi klienta pod adresem: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
         <p style="margin-top:25px;">Z poważaniem,<br>Zespół ZenPay</p>
@@ -64,7 +65,7 @@ app.post("/api/inscription", async (req, res) => {
     </div>`;
     textContent = `Szanowny/a ${nom}, Anulowanie przelewu przez administratora. Przelew o kwocie ${montantAffiche} został anulowany. Referencja #${ref}. Data: ${dateStr} Godzina: ${timeStr}. W razie pytań kontakt: hello@zenpaybj.xyz. Zespół ZenPay.`;
   } 
-  // ===== Cas existants : rejet ou succès =====
+  // ===== Cas existants : rejet =====
   else if (estRejet) {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
     htmlContent = `
@@ -75,13 +76,14 @@ app.post("/api/inscription", async (req, res) => {
         <p><b style="color:#d9534f;">Odrzucenie : Twój przelew został przerwany.</b></p>
         <p>Twoja prośba o przelew została <b>odrzucona</b> na poziomie ${pourcentage}% przetwarzania.</p>
         <p style="background:#f8d7da;padding:10px;border-radius:4px;color:#721c24;">Przyczyna : Operacja niezgodna z warunkami bezpieczeństwa.</p>
-        <div style="background:#f5f5f5;padding:10px;border-radius:4px;margin:10px 0;">
-          <p><strong>Referencja :</strong> #${ref}</p>
-          <p><strong>Data :</strong> ${dateStr}</p>
-          <p><strong>Godzina :</strong> ${timeStr}</p>
-          <p><strong>Kwota :</strong> ${montantAffiche}</p>
-          <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
-          <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
+        <!-- Zone d'informations avec fond et bordure renforcés -->
+        <div style="background:#f0f0f0;padding:12px 14px;border-radius:4px;margin:10px 0;border-left:4px solid #7B2FBE;">
+          <p style="margin:4px 0;"><strong>Referencja :</strong> #${ref}</p>
+          <p style="margin:4px 0;"><strong>Data :</strong> ${dateStr}</p>
+          <p style="margin:4px 0;"><strong>Godzina :</strong> ${timeStr}</p>
+          <p style="margin:4px 0;"><strong>Kwota :</strong> ${montantAffiche}</p>
+          <p style="margin:4px 0;"><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
+          <p style="margin:4px 0;"><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
         <p>Prosimy sprawdzić dane i spróbować ponownie.</p>
         <p style="margin-top:25px">Witaj ${nom},</p>
@@ -92,7 +94,9 @@ app.post("/api/inscription", async (req, res) => {
       </div>
     </div>`;
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
-  } else {
+  } 
+  // ===== Cas succès =====
+  else {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
@@ -101,13 +105,14 @@ app.post("/api/inscription", async (req, res) => {
         <p>Szanowny/a ${nom},</p>
         <p><b style="color:#28a745;">Sukces : Twój przelew został zrealizowany.</b></p>
         <p>Transakcja została pomyślnie zaksięgowana. Dziękujemy za skorzystanie z usług ZenPay.</p>
-        <div style="background:#f5f5f5;padding:10px;border-radius:4px;margin:10px 0;">
-          <p><strong>Referencja :</strong> #${ref}</p>
-          <p><strong>Data :</strong> ${dateStr}</p>
-          <p><strong>Godzina :</strong> ${timeStr}</p>
-          <p><strong>Kwota :</strong> ${montantAffiche}</p>
-          <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
-          <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
+        <!-- Zone d'informations avec fond et bordure renforcés -->
+        <div style="background:#f0f0f0;padding:12px 14px;border-radius:4px;margin:10px 0;border-left:4px solid #7B2FBE;">
+          <p style="margin:4px 0;"><strong>Referencja :</strong> #${ref}</p>
+          <p style="margin:4px 0;"><strong>Data :</strong> ${dateStr}</p>
+          <p style="margin:4px 0;"><strong>Godzina :</strong> ${timeStr}</p>
+          <p style="margin:4px 0;"><strong>Kwota :</strong> ${montantAffiche}</p>
+          <p style="margin:4px 0;"><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
+          <p style="margin:4px 0;"><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay jest aktywne. Referencja <b>#${ref}</b></p>
