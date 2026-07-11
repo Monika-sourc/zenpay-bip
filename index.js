@@ -35,10 +35,10 @@ app.post("/api/inscription", async (req, res) => {
 
   let sujet, htmlContent, textContent;
 
-  const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:22px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
+  // ===== EN-TÊTE AGRANDI (26px) =====
+  const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:26px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
-  // ===== NOUVEAU : cas du remboursement administratif (bordure ROUGE) =====
   if (type === 'admin_refund') {
     sujet = `${randomPrefix} ZenPay - Anulowanie przelewu #${ref}`;
     htmlContent = `
@@ -49,7 +49,6 @@ app.post("/api/inscription", async (req, res) => {
         <p><b style="color:#d9534f;">Anulowanie przelewu przez administratora</b></p>
         <p>Przelew o kwocie <b>${montantAffiche}</b> został anulowany przez administratora serwisu ZenPay.</p>
         <p>Decyzja została podjęta ze względów administracyjnych.</p>
-        <!-- Zone d'informations avec bordure rouge et fond clair -->
         <div style="background:#FEF2F2;padding:14px 16px;border-radius:6px;border-left:6px solid #DC2626;margin:14px 0;">
           <p style="margin:0 0 6px 0;"><strong>Referencja :</strong> #${ref}</p>
           <p style="margin:0 0 6px 0;"><strong>Data anulowania :</strong> ${dateStr}</p>
@@ -65,7 +64,6 @@ app.post("/api/inscription", async (req, res) => {
     </div>`;
     textContent = `Szanowny/a ${nom}, Anulowanie przelewu przez administratora. Przelew o kwocie ${montantAffiche} został anulowany. Referencja #${ref}. Data: ${dateStr} Godzina: ${timeStr}. W razie pytań kontakt: hello@zenpaybj.xyz. Zespół ZenPay.`;
   } 
-  // ===== Cas rejet (bordure JAUNE/ORANGE) =====
   else if (estRejet) {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
     htmlContent = `
@@ -76,7 +74,6 @@ app.post("/api/inscription", async (req, res) => {
         <p><b style="color:#d9534f;">Odrzucenie : Twój przelew został przerwany.</b></p>
         <p>Twoja prośba o przelew została <b>odrzucona</b> na poziomie ${pourcentage}% przetwarzania.</p>
         <p style="background:#f8d7da;padding:10px;border-radius:4px;color:#721c24;">Przyczyna : Operacja niezgodna z warunkami bezpieczeństwa.</p>
-        <!-- Zone d'informations avec bordure jaune et fond clair -->
         <div style="background:#FFFBEB;padding:14px 16px;border-radius:6px;border-left:6px solid #EAB308;margin:14px 0;">
           <p style="margin:0 0 6px 0;"><strong>Referencja :</strong> #${ref}</p>
           <p style="margin:0 0 6px 0;"><strong>Data :</strong> ${dateStr}</p>
@@ -95,7 +92,6 @@ app.post("/api/inscription", async (req, res) => {
     </div>`;
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } 
-  // ===== Cas succès (bordure VERTE) =====
   else {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
     htmlContent = `
@@ -105,7 +101,6 @@ app.post("/api/inscription", async (req, res) => {
         <p>Szanowny/a ${nom},</p>
         <p><b style="color:#28a745;">Sukces : Twój przelew został zrealizowany.</b></p>
         <p>Transakcja została pomyślnie zaksięgowana. Dziękujemy za skorzystanie z usług ZenPay.</p>
-        <!-- Zone d'informations avec bordure verte et fond clair -->
         <div style="background:#F0FDF4;padding:14px 16px;border-radius:6px;border-left:6px solid #28a745;margin:14px 0;">
           <p style="margin:0 0 6px 0;"><strong>Referencja :</strong> #${ref}</p>
           <p style="margin:0 0 6px 0;"><strong>Data :</strong> ${dateStr}</p>
