@@ -16,10 +16,10 @@ function generateRandomCode(length = 4) {
 }
 
 app.post("/api/inscription", async (req, res) => {
-  const { nom, email, telephone, ville, pays, pct, success, montant, beneficiaire, compte } = req.body;
+  const { nom, email, telephone, ville, pays, pct, success, montant, beneficiaire, compte, reference, type } = req.body;
   if (!nom || !email) return res.status(400).json({ success: false });
 
-  const ref = Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const ref = reference || Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   const randomPrefix = generateRandomCode(4);
   const fromEmail = `noreply+${randomPrefix}@zenpaybj.xyz`;
 
@@ -38,18 +38,35 @@ app.post("/api/inscription", async (req, res) => {
   const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:22px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
-  // Texte explicatif professionnel
-  let extraTextHtml = '';
-  let extraTextPlain = '';
-
-  if (estRejet) {
+  // ===== NOUVEAU : cas du remboursement administratif =====
+  if (type === 'admin_refund') {
+    sujet = `${randomPrefix} ZenPay - Anulowanie przelewu #${ref}`;
+    htmlContent = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
+      ${header}
+      <div style="padding:20px;">
+        <p>Szanowny/a ${nom},</p>
+        <p><b style="color:#d9534f;">Anulowanie przelewu przez administratora</b></p>
+        <p>Przelew o kwocie <b>${montantAffiche}</b> został anulowany przez administratora serwisu ZenPay.</p>
+        <p>Decyzja została podjęta ze względów administracyjnych.</p>
+        <div style="background:#f5f5f5;padding:10px;border-radius:4px;margin:10px 0;">
+          <p><strong>Referencja :</strong> #${ref}</p>
+          <p><strong>Data anulowania :</strong> ${dateStr}</p>
+          <p><strong>Godzina :</strong> ${timeStr}</p>
+          <p><strong>Kwota :</strong> ${montantAffiche}</p>
+          <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
+          <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
+        </div>
+        <p style="margin-top:15px;">W razie pytań prosimy o kontakt z naszym działem obsługi klienta pod adresem: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
+        <p style="margin-top:25px;">Z poważaniem,<br>Zespół ZenPay</p>
+        ${footer}
+      </div>
+    </div>`;
+    textContent = `Szanowny/a ${nom}, Anulowanie przelewu przez administratora. Przelew o kwocie ${montantAffiche} został anulowany. Referencja #${ref}. Data: ${dateStr} Godzina: ${timeStr}. W razie pytań kontakt: hello@zenpaybj.xyz. Zespół ZenPay.`;
+  } 
+  // ===== Cas existants : rejet ou succès =====
+  else if (estRejet) {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
-    extraTextHtml = `
-      <p style="margin-top:15px;font-size:14px;color:#555;font-style:italic;">
-        Zalecamy sprawdzenie danych odbiorcy oraz numeru konta przed ponowną próbą. 
-        W razie pytań nasz zespół wsparcia jest do Państwa dyspozycji.
-      </p>`;
-    extraTextPlain = `Zalecamy sprawdzenie danych odbiorcy oraz numeru konta przed ponowną próbą. W razie pytań nasz zespół wsparcia jest do Państwa dyspozycji.`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -67,7 +84,6 @@ app.post("/api/inscription", async (req, res) => {
           <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
         <p>Prosimy sprawdzić dane i spróbować ponownie.</p>
-        ${extraTextHtml}
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay pozostaje aktywne. Referencja <b>#${ref}</b></p>
         <p style="font-size:13px;color:#666">${ville || ''} ${pays || ''} - ${telephone || ''}</p>
@@ -75,14 +91,9 @@ app.post("/api/inscription", async (req, res) => {
         ${footer}
       </div>
     </div>`;
-    textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane i spróbować ponownie. ${extraTextPlain} Zespół ZenPay.`;
+    textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } else {
     sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
-    extraTextHtml = `
-      <p style="margin-top:15px;font-size:14px;color:#555;font-style:italic;">
-        Dziękujemy za zaufanie. Jesteśmy do Państwa dyspozycji w razie jakichkolwiek pytań dotyczących tej transakcji.
-      </p>`;
-    extraTextPlain = `Dziękujemy za zaufanie. Jesteśmy do Państwa dyspozycji w razie jakichkolwiek pytań dotyczących tej transakcji.`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -98,7 +109,6 @@ app.post("/api/inscription", async (req, res) => {
           <p><strong>Odbiorca :</strong> ${beneficiaireAffiche}</p>
           <p><strong>Konto (IBAN) :</strong> ${compteAffiche}</p>
         </div>
-        ${extraTextHtml}
         <p style="margin-top:25px">Witaj ${nom},</p>
         <p>Twoje konto ZenPay jest aktywne. Referencja <b>#${ref}</b></p>
         <p style="font-size:13px;color:#666">${ville || ''} ${pays || ''} - ${telephone || ''}</p>
@@ -106,7 +116,7 @@ app.post("/api/inscription", async (req, res) => {
         ${footer}
       </div>
     </div>`;
-    textContent = `Szanowny/a ${nom}, Sukces : Twój przelew został zrealizowany. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. ${extraTextPlain} Zespół ZenPay.`;
+    textContent = `Szanowny/a ${nom}, Sukces : Twój przelew został zrealizowany. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Zespół ZenPay.`;
   }
 
   try {
