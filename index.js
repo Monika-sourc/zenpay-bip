@@ -21,7 +21,6 @@ app.post("/api/inscription", async (req, res) => {
 
   const ref = reference || Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   const randomPrefix = generateRandomCode(4);
-  const fromEmail = `noreply+${randomPrefix}@zenpaybj.xyz`;
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -35,7 +34,6 @@ app.post("/api/inscription", async (req, res) => {
 
   let sujet, htmlContent, textContent;
 
-  // ===== EN-TÊTE AGRANDI (26px) =====
   const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:26px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
@@ -121,7 +119,7 @@ app.post("/api/inscription", async (req, res) => {
 
   try {
     await resend.emails.send({
-      from: `ZenPay <${fromEmail}>`,
+      from: "ZenPay <noreply@zenpaybj.xyz>", // ✅ Expéditeur fixe (sans suffixe)
       to: [email],
       reply_to: "noreply@zenpaybj.xyz",
       subject: sujet,
