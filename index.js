@@ -22,8 +22,8 @@ app.post("/api/inscription", async (req, res) => {
   const estRejet = (success === false) || (typeof pct === 'number' && pct < 100);
   const pourcentage = (typeof pct === 'number' && pct >= 0 && pct <= 100) ? pct : 100;
 
-  // ===== SUJET UNIQUE ET SIMPLE =====
-  const sujet = `Witaj w ZenPay, ${nom}`;
+  // ===== SUJET UNIQUE EN FRANÇAIS =====
+  const sujet = `Bienvenue sur ZenPay (${nom})`;
 
   let htmlContent, textContent;
 
