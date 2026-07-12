@@ -28,7 +28,7 @@ app.post("/api/inscription", async (req, res) => {
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
   if (type === 'admin_refund') {
-    sujet = `ZenPay - Anulowanie przelewu #${ref}`;
+    sujet = `ZenPay - ${nom}, przelew anulowany`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -53,7 +53,7 @@ app.post("/api/inscription", async (req, res) => {
     textContent = `Szanowny/a ${nom}, Anulowanie przelewu przez administratora. Przelew o kwocie ${montantAffiche} został anulowany. Referencja #${ref}. Data: ${dateStr} Godzina: ${timeStr}. W razie pytań kontakt: hello@zenpaybj.xyz. Zespół ZenPay.`;
   } 
   else if (estRejet) {
-    sujet = `ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
+    sujet = `ZenPay - ${nom}, przelew odrzucony`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -81,7 +81,7 @@ app.post("/api/inscription", async (req, res) => {
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } 
   else {
-    sujet = `ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
+    sujet = `ZenPay - ${nom}, dobrze zrobione!`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -109,16 +109,14 @@ app.post("/api/inscription", async (req, res) => {
 
   try {
     await resend.emails.send({
-      from: "ZenPay <noreply@zenpaybj.xyz>", // ✅ Expéditeur fixe
+      from: "ZenPay <noreply@zenpaybj.xyz>",
       to: [email],
       reply_to: "hello@zenpaybj.xyz",
       subject: sujet,
       html: htmlContent,
       text: textContent,
       headers: {
-        // ✅ Uniquement List-Unsubscribe (propre)
-        "List-Unsubscribe": "<mailto:hello@zenpaybj.xyz?subject=unsubscribe>",
-        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
+        "List-Unsubscribe": "<mailto:hello@zenpaybj.xyz?subject=unsubscribe>"
       }
     });
     res.json({ success: true, ref });
