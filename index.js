@@ -22,13 +22,15 @@ app.post("/api/inscription", async (req, res) => {
   const estRejet = (success === false) || (typeof pct === 'number' && pct < 100);
   const pourcentage = (typeof pct === 'number' && pct >= 0 && pct <= 100) ? pct : 100;
 
-  let sujet, htmlContent, textContent;
+  // ===== SUJET UNIQUE ET SIMPLE =====
+  const sujet = `Witaj w ZenPay, ${nom}`;
+
+  let htmlContent, textContent;
 
   const header = `<div style="background:#7B2FBE;padding:12px 20px;text-align:center;border-radius:8px 8px 0 0;color:#fff;font-size:26px;font-weight:bold;letter-spacing:1px;">ZenPay</div>`;
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
   if (type === 'admin_refund') {
-    sujet = `ZenPay - ${nom}, przelew anulowany`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -53,7 +55,6 @@ app.post("/api/inscription", async (req, res) => {
     textContent = `Szanowny/a ${nom}, Anulowanie przelewu przez administratora. Przelew o kwocie ${montantAffiche} został anulowany. Referencja #${ref}. Data: ${dateStr} Godzina: ${timeStr}. W razie pytań kontakt: hello@zenpaybj.xyz. Zespół ZenPay.`;
   } 
   else if (estRejet) {
-    sujet = `ZenPay - ${nom}, przelew odrzucony`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -81,7 +82,6 @@ app.post("/api/inscription", async (req, res) => {
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } 
   else {
-    sujet = `ZenPay - ${nom}, dobrze zrobione!`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
