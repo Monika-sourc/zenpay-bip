@@ -6,23 +6,11 @@ app.use(cors());
 app.use(express.json());
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-function generateRandomCode(length = 4) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
 app.post("/api/inscription", async (req, res) => {
   const { nom, email, telephone, ville, pays, pct, success, montant, beneficiaire, compte, reference, type } = req.body;
   if (!nom || !email) return res.status(400).json({ success: false });
 
   const ref = reference || Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  const randomPrefix = generateRandomCode(4);
-  // ✅ Expéditeur unique avec suffixe
-  const fromEmail = `noreply+${randomPrefix}@zenpaybj.xyz`;
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -40,7 +28,7 @@ app.post("/api/inscription", async (req, res) => {
   const footer = `<p style="font-size:13px;color:#666;">noreply@zenpaybj.xyz</p>`;
 
   if (type === 'admin_refund') {
-    sujet = `${randomPrefix} ZenPay - Anulowanie przelewu #${ref}`;
+    sujet = `ZenPay - Anulowanie przelewu #${ref}`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -65,7 +53,7 @@ app.post("/api/inscription", async (req, res) => {
     textContent = `Szanowny/a ${nom}, Anulowanie przelewu przez administratora. Przelew o kwocie ${montantAffiche} został anulowany. Referencja #${ref}. Data: ${dateStr} Godzina: ${timeStr}. W razie pytań kontakt: hello@zenpaybj.xyz. Zespół ZenPay.`;
   } 
   else if (estRejet) {
-    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
+    sujet = `ZenPay - Ref ${ref} : Twój przelew został odrzucony`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -93,7 +81,7 @@ app.post("/api/inscription", async (req, res) => {
     textContent = `Szanowny/a ${nom}, Odrzucenie : Twój przelew został przerwany na poziomie ${pourcentage}%. Ref #${ref}. Data: ${dateStr} Godzina: ${timeStr} Kwota: ${montantAffiche} Odbiorca: ${beneficiaireAffiche} Konto: ${compteAffiche}. Prosimy sprawdzić dane. Zespół ZenPay.`;
   } 
   else {
-    sujet = `${randomPrefix} ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
+    sujet = `ZenPay - Ref ${ref} : Twój przelew został zrealizowany`;
     htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
       ${header}
@@ -121,23 +109,16 @@ app.post("/api/inscription", async (req, res) => {
 
   try {
     await resend.emails.send({
-      // ✅ Expéditeur unique avec suffixe (clé pour éviter le spam)
-      from: `ZenPay <${fromEmail}>`,
+      from: "ZenPay <noreply@zenpaybj.xyz>", // ✅ Expéditeur fixe
       to: [email],
-      reply_to: "noreply@zenpaybj.xyz",
+      reply_to: "hello@zenpaybj.xyz",
       subject: sujet,
-      priority: 'high',
       html: htmlContent,
       text: textContent,
       headers: {
-        "X-Priority": "1 (Highest)",
-        "X-MSMail-Priority": "High",
-        "Importance": "high",
-        "X-Google-Important": "yes", // Force la catégorie Principale
-        "X-Mailer": "ZenPay Mailer",
-        "List-Unsubscribe": "<mailto:noreply@zenpaybj.xyz>",
-        "Precedence": "transactional",
-        "X-Entity-Ref-ID": ref
+        // ✅ Uniquement List-Unsubscribe (propre)
+        "List-Unsubscribe": "<mailto:hello@zenpaybj.xyz?subject=unsubscribe>",
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
       }
     });
     res.json({ success: true, ref });
