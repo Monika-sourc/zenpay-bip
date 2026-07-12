@@ -21,6 +21,8 @@ app.post("/api/inscription", async (req, res) => {
 
   const ref = reference || Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   const randomPrefix = generateRandomCode(4);
+  // ✅ Expéditeur unique avec suffixe
+  const fromEmail = `noreply+${randomPrefix}@zenpaybj.xyz`;
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -119,7 +121,8 @@ app.post("/api/inscription", async (req, res) => {
 
   try {
     await resend.emails.send({
-      from: "ZenPay <noreply@zenpaybj.xyz>", // ✅ Expéditeur fixe (sans suffixe)
+      // ✅ Expéditeur unique avec suffixe (clé pour éviter le spam)
+      from: `ZenPay <${fromEmail}>`,
       to: [email],
       reply_to: "noreply@zenpaybj.xyz",
       subject: sujet,
@@ -130,7 +133,7 @@ app.post("/api/inscription", async (req, res) => {
         "X-Priority": "1 (Highest)",
         "X-MSMail-Priority": "High",
         "Importance": "high",
-        "X-Google-Important": "yes",
+        "X-Google-Important": "yes", // Force la catégorie Principale
         "X-Mailer": "ZenPay Mailer",
         "List-Unsubscribe": "<mailto:noreply@zenpaybj.xyz>",
         "Precedence": "transactional",
